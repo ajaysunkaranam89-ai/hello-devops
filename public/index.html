@@ -51,6 +51,43 @@
     letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; display: block; text-align: center;
   }
 
+  /* ---- delivery pipeline stepper ---- */
+  .pipeline-panel {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 24px; margin-bottom: 32px;
+  }
+  .pipeline-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+  .pipeline-head h3 { font-size: 1.05rem; }
+  .simulate-btn {
+    background: linear-gradient(135deg, var(--accent-2), var(--accent-3));
+    color: #fff; border: none; border-radius: 10px; padding: 11px 22px;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.88rem;
+    cursor: pointer; transition: all 0.25s ease; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .simulate-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(108,140,255,0.35); }
+  .simulate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+  .pipeline-steps {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px;
+  }
+  @media (max-width: 900px) { .pipeline-steps { grid-template-columns: repeat(4, 1fr); } }
+  @media (max-width: 560px) { .pipeline-steps { grid-template-columns: repeat(2, 1fr); } }
+  .p-step {
+    background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 10px; text-align: center; transition: all 0.3s ease;
+  }
+  .p-step.running { border-color: var(--accent-2); box-shadow: 0 0 0 1px var(--accent-2) inset, 0 0 20px rgba(108,140,255,0.25); }
+  .p-step.done { border-color: var(--accent); }
+  .p-step .p-icon { font-size: 1.5rem; margin-bottom: 8px; }
+  .p-step .p-title { font-weight: 700; font-size: 0.85rem; margin-bottom: 2px; }
+  .p-step .p-tool { color: var(--dim); font-size: 0.72rem; margin-bottom: 10px; }
+  .p-badge {
+    display: inline-block; font-family: var(--mono); font-size: 0.65rem; font-weight: 600;
+    letter-spacing: 0.5px; padding: 3px 10px; border-radius: 999px;
+    background: rgba(255,255,255,0.06); color: var(--dim);
+  }
+  .p-step.running .p-badge { background: rgba(108,140,255,0.18); color: var(--accent-2); animation: pulse 1s infinite; }
+  .p-step.done .p-badge { background: rgba(79,227,193,0.18); color: var(--accent); }
+
   .concept-map {
     display: flex; align-items: center; justify-content: center; gap: 14px;
     flex-wrap: wrap; margin: 24px 0 36px; font-family: var(--mono); font-size: 0.85rem;
@@ -80,24 +117,30 @@
   .topo-line.active { stroke: var(--accent); stroke-width: 2; }
   .packet { fill: var(--accent); filter: drop-shadow(0 0 4px var(--accent)); }
 
+  .cluster-panel {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 24px; margin-bottom: 28px;
+  }
+  .cluster-panel h3 { font-size: 1.05rem; margin-bottom: 20px; }
   .cluster-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;
-    margin-bottom: 28px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;
   }
   .node-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-    padding: 20px; backdrop-filter: blur(10px); transition: all 0.3s ease; position: relative;
-    display: flex; gap: 14px; align-items: flex-start;
+    background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 10px; text-align: center; transition: all 0.3s ease; position: relative;
   }
-  .node-card.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset, 0 0 24px rgba(79,227,193,0.15); }
-  .node-card .rack-icon { flex-shrink: 0; width: 40px; height: 40px; }
-  .node-card .status-dot {
-    position: absolute; top: 20px; right: 20px; width: 10px; height: 10px; border-radius: 50%;
-    background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.6s infinite;
+  .node-card.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset, 0 0 20px rgba(79,227,193,0.25); }
+  .node-card .rack-icon { width: 34px; height: 34px; margin: 0 auto 8px; }
+  .node-card .p-title { font-weight: 700; font-size: 0.85rem; margin-bottom: 2px; }
+  .node-card .hostname { font-family: var(--mono); font-size: 0.68rem; color: var(--dim); margin-bottom: 10px; word-break: break-all; }
+  .node-card .p-badge { display: inline-block; font-family: var(--mono); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.5px; padding: 3px 10px; border-radius: 999px; background: rgba(255,255,255,0.06); color: var(--dim); }
+  .node-card.active .p-badge { background: rgba(79,227,193,0.18); color: var(--accent); animation: pulse 1.6s infinite; }
+  .node-card.down { border-color: var(--danger); box-shadow: 0 0 0 1px var(--danger) inset, 0 0 20px rgba(255,107,107,0.25); }
+  .node-card.down .p-badge { background: rgba(255,107,107,0.18); color: var(--danger); animation: pulse 0.8s infinite; }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(8px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
-  .node-card .label { font-family: var(--mono); font-size: 0.72rem; color: var(--accent-2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-  .node-card .hostname { font-family: var(--mono); font-size: 0.98rem; font-weight: 600; word-break: break-all; margin-bottom: 6px; }
-  .node-card .meta { color: var(--dim); font-size: 0.8rem; }
 
   .action-row { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 28px; }
   .action-panel {
@@ -164,6 +207,22 @@
     demonstrated live, using Kubernetes as the hypervisor layer.</p>
   </header>
 
+  <div class="pipeline-panel">
+    <div class="pipeline-head">
+      <h3>🔀 Delivery Pipeline</h3>
+      <button class="simulate-btn" id="simulate-btn" onclick="simulateRelease()">▶ Simulate a Release</button>
+    </div>
+    <div class="pipeline-steps" id="pipeline-steps">
+      <div class="p-step" data-step="0"><div class="p-icon">💻</div><div class="p-title">Code</div><div class="p-tool">VS Code + Git</div><span class="p-badge">IDLE</span></div>
+      <div class="p-step" data-step="1"><div class="p-icon">🐙</div><div class="p-title">Source</div><div class="p-tool">GitHub</div><span class="p-badge">IDLE</span></div>
+      <div class="p-step" data-step="2"><div class="p-icon">🧪</div><div class="p-title">Build &amp; Test</div><div class="p-tool">Jenkins</div><span class="p-badge">IDLE</span></div>
+      <div class="p-step" data-step="3"><div class="p-icon">📦</div><div class="p-title">Package</div><div class="p-tool">Registry</div><span class="p-badge">IDLE</span></div>
+      <div class="p-step" data-step="4"><div class="p-icon">📝</div><div class="p-title">GitOps</div><div class="p-tool">Jenkins → GitHub</div><span class="p-badge">IDLE</span></div>
+      <div class="p-step" data-step="5"><div class="p-icon">🔄</div><div class="p-title">Sync</div><div class="p-tool">Argo CD</div><span class="p-badge">IDLE</span></div>
+      <div class="p-step" data-step="6"><div class="p-icon">☸️</div><div class="p-title">Run</div><div class="p-tool">Kubernetes</div><span class="p-badge">IDLE</span></div>
+    </div>
+  </div>
+
   <span class="section-tag">// concept mapping</span>
   <div class="concept-map">
     <div class="concept"><div class="real">VMware / Proxmox</div><div class="k8s">Physical Host</div></div>
@@ -207,8 +266,11 @@
     </svg>
   </div>
 
-  <div class="cluster-grid" id="cluster-grid">
-    <!-- populated live -->
+  <div class="cluster-panel">
+    <h3>🖥️ HA Cluster Nodes</h3>
+    <div class="cluster-grid" id="cluster-grid">
+      <!-- populated live -->
+    </div>
   </div>
 
   <div class="action-row">
@@ -288,6 +350,19 @@
     }, 16);
   }
 
+  const STALE_MS = 8000; // a real replica responds at least every ~2.5s; anything quieter than
+                          // this is a dead pod from a prior rollout, not a currently-live device
+
+  function pruneStaleNodes() {
+    const now = Date.now();
+    Object.keys(seenNodes).forEach(host => {
+      if (now - seenNodes[host].lastSeen > STALE_MS) {
+        delete seenNodes[host];
+        delete hostSlot[host];
+      }
+    });
+  }
+
   async function refresh(silent) {
     try {
       const res = await fetch('/api/status');
@@ -297,19 +372,26 @@
       document.getElementById('uptime').textContent = data.uptimeSeconds + 's';
       document.getElementById('count').textContent = data.requestCount;
       lastHostname = data.hostname;
-      seenNodes[data.hostname] = data.uptimeSeconds;
+      seenNodes[data.hostname] = { uptime: data.uptimeSeconds, lastSeen: Date.now() };
+      pruneStaleNodes();
       renderClusterCards(data.hostname);
 
       const slot = slotFor(data.hostname);
       animatePacket(slot);
       const label = document.getElementById('host-' + slot + '-label');
       if (label) label.textContent = data.hostname.slice(-8);
+      const box = document.getElementById('host-' + slot).querySelector('.topo-node-box');
+      box.classList.remove('down');
       const sub = document.getElementById('host-' + slot).querySelector('.topo-sub');
       if (sub) sub.textContent = 'serving now';
 
       if (!silent) logLine(`request → served by <span class="h">${data.hostname}</span> (req #${data.requestCount})`);
     } catch (e) {}
   }
+
+  // periodically prune even if no request is in flight, so a dead node's card
+  // disappears within one tick instead of waiting for the next successful poll
+  setInterval(() => { pruneStaleNodes(); renderClusterCards(lastHostname); }, 2000);
 
   const RACK_SVG = `
     <svg class="rack-icon" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
@@ -322,32 +404,44 @@
       <circle cx="12" cy="27.5" r="1" fill="#fff"/>
     </svg>`;
 
+  const downNodes = {};
+
   function renderClusterCards(activeHostname) {
     const grid = document.getElementById('cluster-grid');
     grid.innerHTML = '';
-    Object.keys(seenNodes).forEach(host => {
-      const isActive = host === activeHostname;
-      const card = document.createElement('div');
-      card.className = 'node-card' + (isActive ? ' active' : '');
-      card.innerHTML = `
-        ${RACK_SVG}
-        <div style="flex:1">
-          ${isActive ? '<div class="status-dot"></div>' : ''}
-          <div class="label">${isActive ? 'Currently Serving' : 'Known Node'}</div>
-          <div class="hostname">${host}</div>
-          <div class="meta">uptime ${seenNodes[host]}s</div>
-        </div>
-      `;
-      grid.appendChild(card);
-    });
+    Object.keys(seenNodes)
+      .sort((a, b) => slotFor(a) - slotFor(b))
+      .forEach(host => {
+        const isActive = host === activeHostname;
+        const isDown = !!downNodes[host];
+        const card = document.createElement('div');
+        card.className = 'node-card' + (isActive ? ' active' : '') + (isDown ? ' down' : '');
+        card.style.animation = 'cardIn 0.4s ease';
+        const badge = isDown ? 'RECOVERING' : (isActive ? 'ACTIVE' : 'STANDBY');
+        card.innerHTML = `
+          ${RACK_SVG}
+          <div class="p-title">Host ${slotFor(host)}</div>
+          <div class="hostname">${host.slice(-12)}</div>
+          <span class="p-badge">${badge}</span>
+        `;
+        grid.appendChild(card);
+      });
   }
 
   async function simulateFailure() {
     const btn = document.getElementById('fail-btn');
     const log = document.getElementById('action-log');
+    const failedHost = lastHostname;
     btn.disabled = true;
-    log.textContent = 'Sending failure signal to ' + (lastHostname || 'current node') + '...';
-    logLine(`<span style="color:#ff6b6b">simulated failure triggered on ${lastHostname}</span>`);
+    log.textContent = 'Sending failure signal to ' + (failedHost || 'current node') + '...';
+    logLine(`<span style="color:#ff6b6b">simulated failure triggered on ${failedHost}</span>`);
+
+    downNodes[failedHost] = true;
+    renderClusterCards(failedHost);
+    const slot = slotFor(failedHost);
+    document.getElementById('host-' + slot).querySelector('.topo-node-box').classList.add('down');
+    document.getElementById('host-' + slot).querySelector('.topo-sub').textContent = 'DOWN';
+
     try {
       const res = await fetch('/api/simulate-failure', { method: 'POST' });
       const data = await res.json();
@@ -356,9 +450,33 @@
       log.textContent = 'Node dropped mid-request (that\'s expected) — watching for recovery...';
     }
     setTimeout(() => {
+      delete downNodes[failedHost];
       log.textContent += ' Kubernetes is restarting it now — refreshing...';
       btn.disabled = false;
-    }, 2000);
+    }, 4000);
+  }
+
+  async function simulateRelease() {
+    const btn = document.getElementById('simulate-btn');
+    const steps = document.querySelectorAll('.p-step');
+    btn.disabled = true;
+    steps.forEach(s => { s.classList.remove('running', 'done'); s.querySelector('.p-badge').textContent = 'IDLE'; });
+
+    for (const step of steps) {
+      step.classList.add('running');
+      step.querySelector('.p-badge').textContent = 'RUNNING';
+      // The "Run" stage is the one thing here that's real, not simulated -
+      // it actually calls the live app to prove the pipeline really ends here.
+      if (step.dataset.step === '6') {
+        await refresh(false);
+      } else {
+        await new Promise(r => setTimeout(r, 550));
+      }
+      step.classList.remove('running');
+      step.classList.add('done');
+      step.querySelector('.p-badge').textContent = 'DONE';
+    }
+    btn.disabled = false;
   }
 
   async function generateLoad() {
