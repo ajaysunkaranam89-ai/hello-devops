@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>hello-devops — Live Pipeline Demo</title>
+<title>HA Virtualization Cluster Demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
@@ -12,7 +12,7 @@
     --bg: #06080c; --card: rgba(255,255,255,0.035); --border: rgba(255,255,255,0.09);
     --border-hover: rgba(100,220,210,0.45);
     --text: #eef3f8; --dim: #8fa1b5;
-    --accent: #4fe3c1; --accent-2: #6c8cff; --accent-3: #b76cff;
+    --accent: #4fe3c1; --accent-2: #6c8cff; --accent-3: #b76cff; --danger: #ff6b6b;
     --mono: 'JetBrains Mono', monospace;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -22,7 +22,7 @@
     line-height: 1.6; min-height: 100vh; overflow-x: hidden;
   }
   h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; }
-  .wrap { max-width: 900px; margin: 0 auto; padding: 60px 24px 80px; position: relative; z-index: 2; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 60px 24px 80px; position: relative; z-index: 2; }
 
   .bg-fx { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
   .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.3; animation: float 22s ease-in-out infinite; }
@@ -35,46 +35,80 @@
     66% { transform: translate(-25px,20px) scale(0.95); }
   }
 
-  header { text-align: center; margin-bottom: 48px; }
+  header { text-align: center; margin-bottom: 40px; }
   .pulse-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); margin-right: 8px; box-shadow: 0 0 12px var(--accent); animation: pulse 1.6s infinite; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
   header h1 {
-    font-size: clamp(1.8rem, 5vw, 2.6rem); font-weight: 700; letter-spacing: -0.5px;
+    font-size: clamp(1.6rem, 4.5vw, 2.4rem); font-weight: 700; letter-spacing: -0.5px;
     background: linear-gradient(90deg, #fff, #cfe8ff 40%, var(--accent));
     -webkit-background-clip: text; background-clip: text; color: transparent;
     display: inline-flex; align-items: center;
   }
-  header .sub { color: var(--dim); margin-top: 10px; font-size: 1rem; }
+  header .sub { color: var(--dim); margin-top: 10px; font-size: 0.98rem; max-width: 640px; margin-left: auto; margin-right: auto; }
 
-  .pipeline {
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    flex-wrap: wrap; margin: 36px 0 44px;
+  .section-tag {
+    font-family: var(--mono); font-size: 0.75rem; color: var(--accent-2);
+    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; display: block; text-align: center;
   }
-  .stage {
-    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-    padding: 14px 16px; text-align: center; min-width: 92px;
-    transition: all 0.3s ease;
+
+  .concept-map {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    flex-wrap: wrap; margin: 28px 0 44px; font-family: var(--mono); font-size: 0.85rem;
   }
-  .stage:hover { border-color: var(--border-hover); transform: translateY(-3px); }
-  .stage .icon { font-size: 1.4rem; margin-bottom: 6px; }
-  .stage .name { font-family: var(--mono); font-size: 0.7rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; }
-  .arrow { color: var(--dim); font-size: 1.1rem; opacity: 0.6; }
+  .concept {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 16px; text-align: center;
+  }
+  .concept .real { color: var(--dim); font-size: 0.72rem; }
+  .concept .k8s { color: var(--accent); font-weight: 600; }
+  .concept-arrow { color: var(--dim); }
+
+  .cluster-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;
+    margin-bottom: 28px;
+  }
+  .node-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 22px; backdrop-filter: blur(10px); transition: all 0.3s ease; position: relative;
+  }
+  .node-card.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset, 0 0 24px rgba(79,227,193,0.15); }
+  .node-card .status-dot {
+    position: absolute; top: 20px; right: 20px; width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.6s infinite;
+  }
+  .node-card .label { font-family: var(--mono); font-size: 0.72rem; color: var(--accent-2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .node-card .hostname { font-family: var(--mono); font-size: 1.05rem; font-weight: 600; word-break: break-all; margin-bottom: 6px; }
+  .node-card .meta { color: var(--dim); font-size: 0.82rem; }
+
+  .action-panel {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 28px; text-align: center; margin-bottom: 28px;
+  }
+  .action-panel h3 { font-size: 1.05rem; margin-bottom: 8px; }
+  .action-panel p { color: var(--dim); font-size: 0.9rem; max-width: 560px; margin: 0 auto 20px; }
+  .fail-btn {
+    background: linear-gradient(135deg, var(--danger), #c0392b);
+    color: #fff; border: none; border-radius: 10px; padding: 13px 28px;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.95rem;
+    cursor: pointer; transition: all 0.25s ease;
+  }
+  .fail-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,107,107,0.35); }
+  .fail-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+  .action-log {
+    margin-top: 16px; font-family: var(--mono); font-size: 0.82rem; color: var(--accent);
+    min-height: 20px;
+  }
 
   .stats-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;
     margin-bottom: 40px;
   }
   .stat-card {
     background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-    padding: 22px; backdrop-filter: blur(10px); transition: all 0.3s ease;
+    padding: 20px; backdrop-filter: blur(10px);
   }
-  .stat-card:hover { border-color: var(--border-hover); transform: translateY(-3px); }
-  .stat-card .label { font-family: var(--mono); font-size: 0.72rem; color: var(--accent-2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-  .stat-card .value {
-    font-family: var(--mono); font-size: 1.25rem; font-weight: 600; color: var(--text);
-    word-break: break-all;
-  }
-  .stat-card .explain { color: var(--dim); font-size: 0.82rem; margin-top: 10px; }
+  .stat-card .label { font-family: var(--mono); font-size: 0.7rem; color: var(--accent-2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .stat-card .value { font-family: var(--mono); font-size: 1.15rem; font-weight: 600; word-break: break-all; }
 
   .footer-note {
     text-align: center; color: var(--dim); font-size: 0.85rem; font-family: var(--mono);
@@ -92,51 +126,53 @@
 
 <div class="wrap">
   <header>
-    <h1><span class="pulse-dot"></span>hello-devops</h1>
-    <p class="sub">A live, working demonstration of the full pipeline below — not a mockup.</p>
+    <h1><span class="pulse-dot"></span>HA Virtualization Cluster Demo</h1>
+    <p class="sub">The same High-Availability principle behind VMware HA and Proxmox HA clusters —
+    demonstrated live, using Kubernetes as the hypervisor layer.</p>
   </header>
 
-  <div class="pipeline">
-    <div class="stage"><div class="icon">📦</div><div class="name">Git</div></div>
-    <div class="arrow">→</div>
-    <div class="stage"><div class="icon">⚙️</div><div class="name">Jenkins</div></div>
-    <div class="arrow">→</div>
-    <div class="stage"><div class="icon">🐳</div><div class="name">Docker</div></div>
-    <div class="arrow">→</div>
-    <div class="stage"><div class="icon">🔄</div><div class="name">Argo CD</div></div>
-    <div class="arrow">→</div>
-    <div class="stage"><div class="icon">☸️</div><div class="name">Kubernetes</div></div>
+  <span class="section-tag">// concept mapping</span>
+  <div class="concept-map">
+    <div class="concept"><div class="real">VMware / Proxmox</div><div class="k8s">Physical Host</div></div>
+    <div class="concept-arrow">≈</div>
+    <div class="concept"><div class="real">Kubernetes</div><div class="k8s">Node / Pod Replica</div></div>
+    <div class="concept-arrow">·</div>
+    <div class="concept"><div class="real">HA Cluster</div><div class="k8s">Failover Target</div></div>
+    <div class="concept-arrow">≈</div>
+    <div class="concept"><div class="real">Kubernetes</div><div class="k8s">ReplicaSet</div></div>
+  </div>
+
+  <div class="cluster-grid" id="cluster-grid">
+    <!-- populated live -->
+  </div>
+
+  <div class="action-panel">
+    <h3>⚡ Simulate a Node Failure</h3>
+    <p>
+      In a VMware/Proxmox HA cluster, if a physical host dies, HA automatically restarts its VMs
+      on a surviving host — no human intervention. Click below to actually crash the pod currently
+      serving this page. Kubernetes will restart it the same way, and you'll watch it come back.
+    </p>
+    <button class="fail-btn" id="fail-btn" onclick="simulateFailure()">Simulate Node Failure</button>
+    <div class="action-log" id="action-log"></div>
   </div>
 
   <div class="stats-grid">
-    <div class="stat-card">
-      <div class="label">Pod Hostname</div>
-      <div class="value" id="hostname">-</div>
-      <div class="explain">This is the actual container this response came from. Refresh repeatedly — with 3 replicas running, you'll see this value change as Kubernetes load-balances your requests across different pods.</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Deployed Version</div>
-      <div class="value" id="version">-</div>
-      <div class="explain">Set by the <code>APP_VERSION</code> env var in the manifest Jenkins commits to git. Bump this by pushing a code change — Jenkins builds it, Argo CD deploys it, and this number updates on its own.</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Pod Uptime</div>
-      <div class="value" id="uptime">-</div>
-      <div class="explain">Seconds since <em>this specific pod</em> started. Drops back to near-zero right after a new deployment rolls out — proof a real restart happened, not a cached page.</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Requests Served</div>
-      <div class="value" id="count">-</div>
-      <div class="explain">Counted in-memory by this one pod. Because it's per-pod, not shared, the number you see depends on which replica happened to answer — another small, honest signal of how the load balancing works.</div>
-    </div>
+    <div class="stat-card"><div class="label">Serving Node</div><div class="value" id="hostname">-</div></div>
+    <div class="stat-card"><div class="label">Version</div><div class="value" id="version">-</div></div>
+    <div class="stat-card"><div class="label">Node Uptime</div><div class="value" id="uptime">-</div></div>
+    <div class="stat-card"><div class="label">Requests Served</div><div class="value" id="count">-</div></div>
   </div>
 
   <div class="footer-note">
-    Git push → Jenkins builds &amp; pushes the image → commits the new tag → Argo CD syncs it → Kubernetes rolls it out. No manual <code>kubectl apply</code>, ever.
+    Git push → Jenkins builds &amp; pushes the image → commits the new tag → Argo CD syncs it → Kubernetes rolls it out.
+    3 replicas run at all times — this cluster is always HA by default.
   </div>
 </div>
 
 <script>
+  let lastHostname = null;
+
   async function refresh() {
     try {
       const res = await fetch('/api/status');
@@ -145,8 +181,48 @@
       document.getElementById('version').textContent = data.version;
       document.getElementById('uptime').textContent = data.uptimeSeconds + 's';
       document.getElementById('count').textContent = data.requestCount;
+      lastHostname = data.hostname;
+      renderClusterCard(data.hostname, data.uptimeSeconds);
     } catch (e) {}
   }
+
+  const seenNodes = {};
+  function renderClusterCard(hostname, uptime) {
+    seenNodes[hostname] = uptime;
+    const grid = document.getElementById('cluster-grid');
+    grid.innerHTML = '';
+    Object.keys(seenNodes).forEach(host => {
+      const isActive = host === hostname;
+      const card = document.createElement('div');
+      card.className = 'node-card' + (isActive ? ' active' : '');
+      card.innerHTML = `
+        ${isActive ? '<div class="status-dot"></div>' : ''}
+        <div class="label">${isActive ? 'Currently Serving' : 'Known Node'}</div>
+        <div class="hostname">${host}</div>
+        <div class="meta">uptime ${seenNodes[host]}s</div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  async function simulateFailure() {
+    const btn = document.getElementById('fail-btn');
+    const log = document.getElementById('action-log');
+    btn.disabled = true;
+    log.textContent = 'Sending failure signal to ' + (lastHostname || 'current node') + '...';
+    try {
+      const res = await fetch('/api/simulate-failure', { method: 'POST' });
+      const data = await res.json();
+      log.textContent = data.message;
+    } catch (e) {
+      log.textContent = 'Node dropped mid-request (that\'s expected) — watching for recovery...';
+    }
+    setTimeout(() => {
+      log.textContent += ' Kubernetes is restarting it now — refreshing...';
+      btn.disabled = false;
+    }, 2000);
+  }
+
   refresh();
   setInterval(refresh, 2000);
 </script>

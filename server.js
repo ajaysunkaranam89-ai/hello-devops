@@ -26,6 +26,17 @@ app.get("/api/status", (req, res) => {
   });
 });
 
+// Simulates a host failure, the way an HA hypervisor cluster (VMware HA /
+// Proxmox HA) would experience one node dropping out. Kubernetes reacts the
+// same way those platforms do: it restarts the workload on a healthy node
+// automatically - no human intervention, no manual failover.
+app.post("/api/simulate-failure", (req, res) => {
+  const failedHost = os.hostname();
+  res.json({ message: `Node ${failedHost} is going down. Kubernetes will restart it automatically.` });
+  console.log(`Simulated failure triggered on ${failedHost} - exiting process.`);
+  setTimeout(() => process.exit(1), 300);
+});
+
 app.listen(PORT, () => {
   console.log(`hello-devops listening on port ${PORT}, version ${VERSION}`);
 });
