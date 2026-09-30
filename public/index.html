@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>hello-devops — Live Pipeline Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #06080c; --card: rgba(255,255,255,0.035); --border: rgba(255,255,255,0.09);
+    --border-hover: rgba(100,220,210,0.45);
+    --text: #eef3f8; --dim: #8fa1b5;
+    --accent: #4fe3c1; --accent-2: #6c8cff; --accent-3: #b76cff;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.6; min-height: 100vh; overflow-x: hidden;
+  }
+  h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 60px 24px 80px; position: relative; z-index: 2; }
+
+  .bg-fx { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.3; animation: float 22s ease-in-out infinite; }
+  .blob1 { width: 420px; height: 420px; background: var(--accent); top: -140px; left: -100px; }
+  .blob2 { width: 380px; height: 380px; background: var(--accent-2); top: 260px; right: -120px; animation-delay: -7s; }
+  .blob3 { width: 340px; height: 340px; background: var(--accent-3); bottom: -140px; left: 30%; animation-delay: -14s; }
+  @keyframes float {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(30px,-25px) scale(1.06); }
+    66% { transform: translate(-25px,20px) scale(0.95); }
+  }
+
+  header { text-align: center; margin-bottom: 48px; }
+  .pulse-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); margin-right: 8px; box-shadow: 0 0 12px var(--accent); animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  header h1 {
+    font-size: clamp(1.8rem, 5vw, 2.6rem); font-weight: 700; letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #fff, #cfe8ff 40%, var(--accent));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    display: inline-flex; align-items: center;
+  }
+  header .sub { color: var(--dim); margin-top: 10px; font-size: 1rem; }
+
+  .pipeline {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    flex-wrap: wrap; margin: 36px 0 44px;
+  }
+  .stage {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; text-align: center; min-width: 92px;
+    transition: all 0.3s ease;
+  }
+  .stage:hover { border-color: var(--border-hover); transform: translateY(-3px); }
+  .stage .icon { font-size: 1.4rem; margin-bottom: 6px; }
+  .stage .name { font-family: var(--mono); font-size: 0.7rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; }
+  .arrow { color: var(--dim); font-size: 1.1rem; opacity: 0.6; }
+
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;
+    margin-bottom: 40px;
+  }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 22px; backdrop-filter: blur(10px); transition: all 0.3s ease;
+  }
+  .stat-card:hover { border-color: var(--border-hover); transform: translateY(-3px); }
+  .stat-card .label { font-family: var(--mono); font-size: 0.72rem; color: var(--accent-2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .stat-card .value {
+    font-family: var(--mono); font-size: 1.25rem; font-weight: 600; color: var(--text);
+    word-break: break-all;
+  }
+  .stat-card .explain { color: var(--dim); font-size: 0.82rem; margin-top: 10px; }
+
+  .footer-note {
+    text-align: center; color: var(--dim); font-size: 0.85rem; font-family: var(--mono);
+    border-top: 1px solid var(--border); padding-top: 24px; margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-fx">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+</div>
+
+<div class="wrap">
+  <header>
+    <h1><span class="pulse-dot"></span>hello-devops</h1>
+    <p class="sub">A live, working demonstration of the full pipeline below — not a mockup.</p>
+  </header>
+
+  <div class="pipeline">
+    <div class="stage"><div class="icon">📦</div><div class="name">Git</div></div>
+    <div class="arrow">→</div>
+    <div class="stage"><div class="icon">⚙️</div><div class="name">Jenkins</div></div>
+    <div class="arrow">→</div>
+    <div class="stage"><div class="icon">🐳</div><div class="name">Docker</div></div>
+    <div class="arrow">→</div>
+    <div class="stage"><div class="icon">🔄</div><div class="name">Argo CD</div></div>
+    <div class="arrow">→</div>
+    <div class="stage"><div class="icon">☸️</div><div class="name">Kubernetes</div></div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="label">Pod Hostname</div>
+      <div class="value" id="hostname">-</div>
+      <div class="explain">This is the actual container this response came from. Refresh repeatedly — with 3 replicas running, you'll see this value change as Kubernetes load-balances your requests across different pods.</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Deployed Version</div>
+      <div class="value" id="version">-</div>
+      <div class="explain">Set by the <code>APP_VERSION</code> env var in the manifest Jenkins commits to git. Bump this by pushing a code change — Jenkins builds it, Argo CD deploys it, and this number updates on its own.</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Pod Uptime</div>
+      <div class="value" id="uptime">-</div>
+      <div class="explain">Seconds since <em>this specific pod</em> started. Drops back to near-zero right after a new deployment rolls out — proof a real restart happened, not a cached page.</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Requests Served</div>
+      <div class="value" id="count">-</div>
+      <div class="explain">Counted in-memory by this one pod. Because it's per-pod, not shared, the number you see depends on which replica happened to answer — another small, honest signal of how the load balancing works.</div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    Git push → Jenkins builds &amp; pushes the image → commits the new tag → Argo CD syncs it → Kubernetes rolls it out. No manual <code>kubectl apply</code>, ever.
+  </div>
+</div>
+
+<script>
+  async function refresh() {
+    try {
+      const res = await fetch('/api/status');
+      const data = await res.json();
+      document.getElementById('hostname').textContent = data.hostname;
+      document.getElementById('version').textContent = data.version;
+      document.getElementById('uptime').textContent = data.uptimeSeconds + 's';
+      document.getElementById('count').textContent = data.requestCount;
+    } catch (e) {}
+  }
+  refresh();
+  setInterval(refresh, 2000);
+</script>
+
+</body>
+</html>
