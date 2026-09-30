@@ -19,7 +19,22 @@ pipeline {
             }
         }
 
+        stage('Check commit') {
+            // Jenkins' own manifest-update commit must not trigger another build.
+            steps {
+                script {
+                    def msg = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
+                    env.SKIP_CI = msg.contains('[skip ci]') ? 'true' : 'false'
+                    if (env.SKIP_CI == 'true') {
+                        currentBuild.description = 'Skipped: manifest-update commit'
+                        echo 'Latest commit was made by Jenkins - nothing to build.'
+                    }
+                }
+            }
+        }
+
         stage('Build Docker Image') {
+            when { environment name: 'SKIP_CI', value: 'false' }
             steps {
                 echo "Building Docker image..."
                 sh """
@@ -29,6 +44,7 @@ pipeline {
         }
 
         stage('Push Image to Registry') {
+            when { environment name: 'SKIP_CI', value: 'false' }
             steps {
                 echo "Pushing Docker image to in-cluster registry..."
                 sh """
@@ -38,6 +54,7 @@ pipeline {
         }
 
         stage('Update Manifest & Push') {
+            when { environment name: 'SKIP_CI', value: 'false' }
             steps {
                 echo "Updating deployment manifest with new image tag and version..."
                 sh """
@@ -49,7 +66,7 @@ pipeline {
                         git config user.email "jenkins@ci.local"
                         git config user.name "Jenkins CI"
                         git add k8s/deployment.yaml
-                        git commit -m "ci: update hello-devops image to ${IMAGE_TAG}" || echo "No changes to commit"
+                        git commit -m "ci: update hello-devops image to ${IMAGE_TAG} [skip ci]" || echo "No changes to commit"
                         urlencode() { printf '%s' "\$1" | sed -e 's/%/%25/g' -e 's/@/%40/g' -e 's/:/%3A/g' -e 's#/#%2F#g' -e 's/ /%20/g'; }
                         GIT_USER_ENC=\$(urlencode "\${GIT_USER}")
                         GIT_TOKEN_ENC=\$(urlencode "\${GIT_TOKEN}")
