@@ -156,8 +156,6 @@
   }
   .btn:hover { transform: translateY(-2px); }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-  .fail-btn { background: linear-gradient(135deg, var(--danger), #c0392b); }
-  .fail-btn:hover { box-shadow: 0 8px 24px rgba(255,107,107,0.35); }
   .load-btn { background: linear-gradient(135deg, var(--accent-2), var(--accent-3)); }
   .load-btn:hover { box-shadow: 0 8px 24px rgba(108,140,255,0.35); }
   .action-log { margin-top: 14px; font-family: var(--mono); font-size: 0.78rem; color: var(--accent); min-height: 18px; }
@@ -209,17 +207,17 @@
 
   <div class="pipeline-panel">
     <div class="pipeline-head">
-      <h3>🔀 Delivery Pipeline</h3>
-      <button class="simulate-btn" id="simulate-btn" onclick="simulateRelease()">▶ Simulate a Release</button>
+      <h3>⚡ HA Failover Sequence</h3>
+      <button class="simulate-btn" id="simulate-btn" onclick="simulateFailoverSequence()">▶ Simulate Host Failure</button>
     </div>
     <div class="pipeline-steps" id="pipeline-steps">
-      <div class="p-step" data-step="0"><div class="p-icon">💻</div><div class="p-title">Code</div><div class="p-tool">VS Code + Git</div><span class="p-badge">IDLE</span></div>
-      <div class="p-step" data-step="1"><div class="p-icon">🐙</div><div class="p-title">Source</div><div class="p-tool">GitHub</div><span class="p-badge">IDLE</span></div>
-      <div class="p-step" data-step="2"><div class="p-icon">🧪</div><div class="p-title">Build &amp; Test</div><div class="p-tool">Jenkins</div><span class="p-badge">IDLE</span></div>
-      <div class="p-step" data-step="3"><div class="p-icon">📦</div><div class="p-title">Package</div><div class="p-tool">Registry</div><span class="p-badge">IDLE</span></div>
-      <div class="p-step" data-step="4"><div class="p-icon">📝</div><div class="p-title">GitOps</div><div class="p-tool">Jenkins → GitHub</div><span class="p-badge">IDLE</span></div>
-      <div class="p-step" data-step="5"><div class="p-icon">🔄</div><div class="p-title">Sync</div><div class="p-tool">Argo CD</div><span class="p-badge">IDLE</span></div>
-      <div class="p-step" data-step="6"><div class="p-icon">☸️</div><div class="p-title">Run</div><div class="p-tool">Kubernetes</div><span class="p-badge">IDLE</span></div>
+      <div class="p-step" data-step="0"><div class="p-icon">🖥️</div><div class="p-title">Active Host</div><div class="p-tool">Serving Traffic</div><span class="p-badge">IDLE</span></div>
+      <div class="p-step" data-step="1"><div class="p-icon">💓</div><div class="p-title">Health Check</div><div class="p-tool">Heartbeat Monitor</div><span class="p-badge">IDLE</span></div>
+      <div class="p-step" data-step="2"><div class="p-icon">💥</div><div class="p-title">Host Failure</div><div class="p-tool">Simulated Crash</div><span class="p-badge">IDLE</span></div>
+      <div class="p-step" data-step="3"><div class="p-icon">🚨</div><div class="p-title">Failure Detected</div><div class="p-tool">HA Manager</div><span class="p-badge">IDLE</span></div>
+      <div class="p-step" data-step="4"><div class="p-icon">🔁</div><div class="p-title">Failover</div><div class="p-tool">Reschedule Workload</div><span class="p-badge">IDLE</span></div>
+      <div class="p-step" data-step="5"><div class="p-icon">⏳</div><div class="p-title">Restarting</div><div class="p-tool">New Host Boot</div><span class="p-badge">IDLE</span></div>
+      <div class="p-step" data-step="6"><div class="p-icon">✅</div><div class="p-title">Restored</div><div class="p-tool">Service Healthy</div><span class="p-badge">IDLE</span></div>
     </div>
   </div>
 
@@ -274,14 +272,9 @@
   </div>
 
   <div class="action-row">
-    <div class="action-panel">
-      <h3>⚡ Simulate Node Failure</h3>
-      <p>Crashes the pod currently serving you. Kubernetes restarts it automatically — the same self-healing an HA hypervisor cluster performs when a physical host drops.</p>
-      <button class="btn fail-btn" id="fail-btn" onclick="simulateFailure()">Simulate Node Failure</button>
-    </div>
-    <div class="action-panel">
+    <div class="action-panel" style="flex: none; min-width: 100%;">
       <h3>🚀 Generate Traffic Burst</h3>
-      <p>Fires 12 rapid requests and watches Kubernetes' Service load-balance them across whichever replicas are healthy right now.</p>
+      <p>Fires 12 rapid requests and watches Kubernetes' Service load-balance them across whichever replicas are healthy right now — the same request-distribution an HA load-balanced cluster performs continuously.</p>
       <button class="btn load-btn" id="load-btn" onclick="generateLoad()">Generate Traffic Burst</button>
     </div>
   </div>
@@ -428,54 +421,71 @@
       });
   }
 
-  async function simulateFailure() {
-    const btn = document.getElementById('fail-btn');
-    const log = document.getElementById('action-log');
-    const failedHost = lastHostname;
-    btn.disabled = true;
-    log.textContent = 'Sending failure signal to ' + (failedHost || 'current node') + '...';
-    logLine(`<span style="color:#ff6b6b">simulated failure triggered on ${failedHost}</span>`);
+  async function setStep(steps, i, state, badgeText) {
+    steps[i].classList.remove('running', 'done');
+    if (state) steps[i].classList.add(state);
+    steps[i].querySelector('.p-badge').textContent = badgeText;
+  }
 
+  async function simulateFailoverSequence() {
+    const btn = document.getElementById('simulate-btn');
+    const log = document.getElementById('action-log');
+    const steps = document.querySelectorAll('.p-step');
+    btn.disabled = true;
+    steps.forEach(s => { s.classList.remove('running', 'done'); s.querySelector('.p-badge').textContent = 'IDLE'; });
+
+    const failedHost = lastHostname;
+
+    // 0: Active Host - already serving, just show it
+    await setStep(steps, 0, 'running', 'RUNNING');
+    await refresh(true);
+    await setStep(steps, 0, 'done', 'DONE');
+
+    // 1: Health Check - real heartbeat poll
+    await setStep(steps, 1, 'running', 'RUNNING');
+    await refresh(true);
+    await setStep(steps, 1, 'done', 'DONE');
+
+    // 2: Host Failure - the ONE real destructive action: actually crash the pod
+    await setStep(steps, 2, 'running', 'RUNNING');
+    log.textContent = 'Crashing ' + (failedHost || 'current node') + '...';
+    logLine(`<span style="color:#ff6b6b">simulated failure triggered on ${failedHost}</span>`);
     downNodes[failedHost] = true;
     renderClusterCards(failedHost);
     const slot = slotFor(failedHost);
     document.getElementById('host-' + slot).querySelector('.topo-node-box').classList.add('down');
     document.getElementById('host-' + slot).querySelector('.topo-sub').textContent = 'DOWN';
-
     try {
       const res = await fetch('/api/simulate-failure', { method: 'POST' });
       const data = await res.json();
       log.textContent = data.message;
     } catch (e) {
-      log.textContent = 'Node dropped mid-request (that\'s expected) — watching for recovery...';
+      log.textContent = 'Node dropped mid-request (that\'s expected)...';
     }
-    setTimeout(() => {
-      delete downNodes[failedHost];
-      log.textContent += ' Kubernetes is restarting it now — refreshing...';
-      btn.disabled = false;
-    }, 4000);
-  }
+    await setStep(steps, 2, 'done', 'DONE');
 
-  async function simulateRelease() {
-    const btn = document.getElementById('simulate-btn');
-    const steps = document.querySelectorAll('.p-step');
-    btn.disabled = true;
-    steps.forEach(s => { s.classList.remove('running', 'done'); s.querySelector('.p-badge').textContent = 'IDLE'; });
+    // 3: Failure Detected - HA manager / kubelet noticing the crash
+    await setStep(steps, 3, 'running', 'RUNNING');
+    await new Promise(r => setTimeout(r, 900));
+    await setStep(steps, 3, 'done', 'DONE');
 
-    for (const step of steps) {
-      step.classList.add('running');
-      step.querySelector('.p-badge').textContent = 'RUNNING';
-      // The "Run" stage is the one thing here that's real, not simulated -
-      // it actually calls the live app to prove the pipeline really ends here.
-      if (step.dataset.step === '6') {
-        await refresh(false);
-      } else {
-        await new Promise(r => setTimeout(r, 550));
-      }
-      step.classList.remove('running');
-      step.classList.add('done');
-      step.querySelector('.p-badge').textContent = 'DONE';
-    }
+    // 4: Failover - rescheduling the workload
+    await setStep(steps, 4, 'running', 'RUNNING');
+    await new Promise(r => setTimeout(r, 900));
+    await setStep(steps, 4, 'done', 'DONE');
+
+    // 5: Restarting - waiting for Kubernetes to actually bring a pod back up
+    await setStep(steps, 5, 'running', 'RUNNING');
+    await new Promise(r => setTimeout(r, 1500));
+    delete downNodes[failedHost];
+    await setStep(steps, 5, 'done', 'DONE');
+
+    // 6: Restored - real poll confirming service is answering again
+    await setStep(steps, 6, 'running', 'RUNNING');
+    await refresh(false);
+    log.textContent += ' Service restored — now served by ' + lastHostname + '.';
+    await setStep(steps, 6, 'done', 'DONE');
+
     btn.disabled = false;
   }
 
