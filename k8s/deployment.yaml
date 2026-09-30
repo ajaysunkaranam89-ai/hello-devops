@@ -15,11 +15,11 @@ spec:
     spec:
       containers:
         - name: hello-devops
-          image: localhost:30600/hello-devops:3
+          image: localhost:30600/hello-devops:4
           imagePullPolicy: IfNotPresent
           env:
             - name: APP_VERSION
-              value: "3"
+              value: "4"
           ports:
             - containerPort: 3000
           resources:
