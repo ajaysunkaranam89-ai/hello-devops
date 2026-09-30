@@ -18,7 +18,7 @@ app.get("/health", (req, res) => {
 app.get("/api/status", (req, res) => {
   requestCount += 1;
   res.json({
-    message: "Hello from the DevOps pipeline!",
+    message: "Serving from an HA-managed Kubernetes node.",
     hostname: os.hostname(),
     version: VERSION,
     uptimeSeconds: Math.floor((Date.now() - startTime) / 1000),
