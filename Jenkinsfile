@@ -39,8 +39,9 @@ pipeline {
             // sonar.qualitygate.wait=true fails this stage if the quality gate fails.
             when { environment name: 'SKIP_CI', value: 'false' }
             steps {
-                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                withCredentials([usernamePassword(credentialsId: 'Sonarcube', usernameVariable: 'SONAR_USER', passwordVariable: 'SONAR_PASS')]) {
                     sh '''
+                        export SONAR_TOKEN="$SONAR_PASS"
                         CID=$(docker create --network host \
                             -e SONAR_HOST_URL=http://sonarqube.sonarqube.svc.cluster.local:9000 \
                             -e SONAR_TOKEN \
